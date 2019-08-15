@@ -2,7 +2,7 @@
 
 Introduce
 ====
-This is monitor service, used for monitor assigned nodes.
+This is monitor service, base on grpc, used for monitor assigned nodes.
 
 Install proto buff for go
 ====
@@ -16,3 +16,6 @@ Generate pb from proto file
 cd proto
 /usr/local/bin/protoc --go_out=plugins=grpc:. *.proto
 
+How to use?
+====
+see example/example.go for more details.
