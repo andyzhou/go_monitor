@@ -1,0 +1,36 @@
+syntax="proto3";
+package monitor;
+
+//define node status
+enum NodeStatus {
+    NODE_DOWN = 0; //node down
+    NODE_UP = 1; //node up to service
+    NODE_MAINTAIN = 2;//node in maintain
+}
+
+//message for node info
+message NodeInfo {
+    string kind = 1;//node kind
+    string host = 2;//node address
+    int32 port = 3;//node port
+    int32 status = 4;
+}
+
+//message for nodes query
+message NodesQuery {
+    string kind = 1;//node kind
+}
+
+//message for nodes result
+message NodesResult {
+    repeated NodeInfo nodeList = 1;
+}
+
+//define service
+service MonitorService {
+    //notify to or from monitor
+    rpc NotifyNode(stream NodeInfo) returns(stream NodeInfo);
+    
+    //query batch nodes
+    rpc QueryNodes(NodesQuery) returns(NodesResult);
+}
