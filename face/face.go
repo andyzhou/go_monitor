@@ -2,6 +2,8 @@ package face
 
 /**
  * Inter face
+ * @author <AndyZhou>
+ * @mail <diudiu8848@163.com>
  */
 
  //face info

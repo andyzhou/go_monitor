@@ -1,12 +1,18 @@
 package main
 
 import (
+	"github.com/andyzhou/monitor/client"
 	"log"
 	"os"
-	"monitor/client"
 	"sync"
 	"strconv"
 )
+
+/*
+ * example code
+ * @author <AndyZhou>
+ * @mail <diudiu8848@163.com>
+ */
 
 //internal macro variables
 const (

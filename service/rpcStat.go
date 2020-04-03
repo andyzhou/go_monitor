@@ -1,15 +1,17 @@
 package service
 
 import (
-	"log"
 	"google.golang.org/grpc/stats"
 	"golang.org/x/net/context"
-	"monitor/base"
-	"monitor/face"
+	"github.com/andyzhou/monitor/base"
+	"github.com/andyzhou/monitor/face"
+	"log"
 )
 
 /*
  * RPC stat handler
+ * @author <AndyZhou>
+ * @mail <diudiu8848@163.com>
  * Need apply `TagConn`, `TagRPC`, `HandleConn`, `HandleRPC` methods.
  */
 

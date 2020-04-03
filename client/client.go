@@ -1,19 +1,21 @@
 package client
 
 import (
+	"github.com/andyzhou/tinycells/tc"
 	"google.golang.org/grpc"
-	"bitbucket.org/arui/tinycells/tc"
+	pb "github.com/andyzhou/monitor/pb"
 	"sync"
 	"fmt"
 	"log"
 	"context"
-	pb "monitor/pb"
 	"time"
 	"io"
 )
 
 /*
  * monitor client API
+ * @author <AndyZhou>
+ * @mail <diudiu8848@163.com>
  * support multi monitors?
  */
 

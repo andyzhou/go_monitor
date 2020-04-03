@@ -1,14 +1,14 @@
 package main
 
 import (
-	"bitbucket.org/arui/tinycells/tc"
-	"monitor/service"
+	"github.com/andyzhou/tinycells/tc"
+	"github.com/andyzhou/monitor/service"
+	"github.com/andyzhou/monitor/face"
+	"runtime/debug"
+	"os/signal"
 	"sync"
 	"log"
-	"runtime/debug"
 	"os"
-	"os/signal"
-	"monitor/face"
 )
 
 func init()  {

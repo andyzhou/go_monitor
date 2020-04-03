@@ -2,17 +2,19 @@ package service
 
 import (
 	"golang.org/x/net/context"
-	pb "monitor/pb"
+	"github.com/andyzhou/monitor/base"
+	"github.com/andyzhou/monitor/face"
+	pb "github.com/andyzhou/monitor/pb"
 	"io"
 	"log"
 	"time"
 	"errors"
-	"monitor/base"
-	"monitor/face"
 )
 
 /*
  * rpc node service call back
+ * @author <AndyZhou>
+ * @mail <diudiu8848@163.com>
  */
 
  //rpc node info

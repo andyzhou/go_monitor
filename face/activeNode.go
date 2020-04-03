@@ -1,15 +1,17 @@
 package face
 
-/*
- * Active node data face
- */
-
 import (
+	pb "github.com/andyzhou/monitor/pb"
 	"sync"
 	"log"
-	pb "monitor/pb"
 	"time"
 )
+
+/*
+ * Active node data face
+ * @author <AndyZhou>
+ * @mail <diudiu8848@163.com>
+ */
 
  //internal macro variables
  const (

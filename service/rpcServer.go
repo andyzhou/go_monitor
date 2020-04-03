@@ -1,15 +1,17 @@
 package service
 
 import (
+	"google.golang.org/grpc"
+	"github.com/andyzhou/monitor/pb"
 	"fmt"
 	"net"
 	"log"
-	"google.golang.org/grpc"
-	"monitor/pb"
 )
 
 /*
  * rpc service interface
+ * @author <AndyZhou>
+ * @mail <diudiu8848@163.com>
  */
 
 //rpc server info
