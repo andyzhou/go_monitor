@@ -26,10 +26,6 @@ func NewRpcStat() *RpcStat {
 	return this
 }
 
-////////
-//api
-///////
-
 //remove connect
 func (f *RpcStat) RemoveConn(tag *stats.ConnTagInfo) bool {
 	if tag == nil {
@@ -52,6 +48,5 @@ func (f *RpcStat) AddConn(tag *stats.ConnTagInfo, address string) bool {
 	f.Lock()
 	defer f.Unlock()
 	f.connMap[tag] = address
-
 	return true
 }

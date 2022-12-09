@@ -1,19 +1,19 @@
-package client
+package monitor
 
 import (
-	"github.com/andyzhou/tinycells/tc"
-	"google.golang.org/grpc"
-	pb "github.com/andyzhou/monitor/pb"
-	"sync"
-	"fmt"
-	"log"
 	"context"
-	"time"
+	"fmt"
+	"github.com/andyzhou/monitor/define"
+	pb "github.com/andyzhou/monitor/pb"
+	"google.golang.org/grpc"
 	"io"
+	"log"
+	"sync"
+	"time"
 )
 
 /*
- * monitor client API
+ * monitor client api
  * @author <AndyZhou>
  * @mail <diudiu8848@163.com>
  * support multi monitors?
@@ -24,11 +24,6 @@ import (
  	NodeStatusDown = iota //node down
  	NodeStatusUp //node up
  	NodeStatusMaintain //node in maintain
- )
-
- //internal macro variables
- const (
- 	MonitorCheckRate = 5 //xxx seconds
  )
 
  //single node info
@@ -50,14 +45,13 @@ import (
 
  //client info
  type MonitorClient struct {
- 	curNode NodeInfo `current client node info`
- 	cbNotify func(NodeInfo) bool `callback for node notify`
- 	cbUp func(string, string, int32) `callback for node up`
- 	cbDown func(string, string, int32) `callback for node down`
- 	monitorMap map[string]*monitor `running monitor map, monitorAddr:monitor`
- 	streamMap map[string]*pb.MonitorService_NotifyNodeClient `stream map, monitorAddr:stream`
- 	closeChan chan bool `main process close chan`
- 	logService *tc.LogService `log service object`
+ 	curNode    NodeInfo                                       `current client node info`
+ 	cbNotify   func(NodeInfo) bool                            `callback for node notify`
+ 	cbUp       func(string, string, int32)                    `callback for node up`
+ 	cbDown     func(string, string, int32)                    `callback for node down`
+ 	monitorMap map[string]*monitor                            `running monitor map, monitorAddr:monitor`
+ 	streamMap  map[string]*pb.MonitorService_NotifyNodeClient `stream map, monitorAddr:stream`
+ 	closeChan  chan bool                                      `main process close chan`
  	sync.Mutex `internal data locker`
  }
 
@@ -68,11 +62,7 @@ func NewMonitorClient() *MonitorClient {
 		monitorMap:make(map[string]*monitor),
 		streamMap:make(map[string]*pb.MonitorService_NotifyNodeClient),
 		closeChan:make(chan bool),
-		logService:nil,
 	}
-
-	//set log dir
-	this.setLog("logs", "client")
 
 	//run main process
 	go this.runMainProcess()
@@ -82,9 +72,6 @@ func NewMonitorClient() *MonitorClient {
 //clean up
 func (m *MonitorClient) CleanUp() {
 	m.closeChan <- true
-	if m.logService != nil {
-		m.logService.Close()
-	}
 	time.Sleep(time.Second/20)
 }
 
@@ -193,13 +180,6 @@ func (m *MonitorClient) AddMonitor(host string, port int) bool {
 ///////////////
 //private func
 //////////////
-
-//set log dir
-func (m *MonitorClient) setLog(logPath, logPrefix string) {
-	if m.logService == nil {
-		m.logService = tc.NewLogService(logPath, logPrefix)
-	}
-}
 
 //ping monitor
 //this host and port is client side
@@ -310,7 +290,7 @@ func (m *MonitorClient) checkMonitorStatus() bool {
 //main process
 func (m *MonitorClient) runMainProcess() {
 	var (
-		tick = time.Tick(time.Second * MonitorCheckRate)
+		tick = time.Tick(time.Second * define.MonitorCheckRate)
 		needQuit bool
 	)
 	for {

@@ -1,11 +1,12 @@
 package service
 
 import (
-	"google.golang.org/grpc/stats"
-	"golang.org/x/net/context"
 	"github.com/andyzhou/monitor/base"
 	"github.com/andyzhou/monitor/face"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc/stats"
 	"log"
+	"sync"
 )
 
 /*
@@ -16,24 +17,25 @@ import (
  */
 
 type RpcStat struct {
+	connMap map[*stats.ConnTagInfo]string
 	basic *base.Basic
+	sync.RWMutex
 }
 
 //construct
 func NewRpcStat() *RpcStat {
 	this := &RpcStat{
 		basic:new(base.Basic),
+		connMap: map[*stats.ConnTagInfo]string{},
 	}
 	return this
 }
 
 //connect ctx key info
 //type connCtxKey struct{}
-
 //declare global variables
 //var connMutex sync.Mutex
-var connMap = make(map[*stats.ConnTagInfo]string)
-
+//var connMap = make(map[*stats.ConnTagInfo]string)
 //func getConnTagFromContext(ctx context.Context) (*stats.ConnTagInfo, bool) {
 //	tag, ok := ctx.Value(base.ConnCtxKey{}).(*stats.ConnTagInfo)
 //	return tag, ok

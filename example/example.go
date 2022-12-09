@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/andyzhou/monitor/client"
+	"github.com/andyzhou/monitor"
 	"log"
 	"os"
-	"sync"
 	"strconv"
+	"sync"
+	"time"
 )
 
 /*
@@ -21,7 +22,7 @@ const (
 )
 
 //call back for node changed notify
-func notify(node client.NodeInfo) bool {
+func notify(node monitor.NodeInfo) bool {
 	log.Println("node changed, node:", node)
 	return true
 }
@@ -35,7 +36,7 @@ func main()  {
 	)
 
 	if args < 3 {
-		log.Println("Useage:", os.Args[0], " <host> <port>")
+		log.Println("Usage:", os.Args[0], " <host> <port>")
 		os.Exit(1)
 	}
 
@@ -43,7 +44,7 @@ func main()  {
 	port, _ = strconv.Atoi(os.Args[2])
 
 	//init and add new monitor
-	client := client.NewMonitorClient()
+	client := monitor.NewMonitorClient()
 
 	//set client node
 	client.SetClient("chat", host, int32(port))
@@ -54,8 +55,15 @@ func main()  {
 	//try ping monitors?
 	client.AddMonitor(RpcHost, RpcPort)
 
-	result := client.GetBatchNodes("")
-	log.Println("result:", result)
+	//get batch nodes
+	sf := func() {
+		for {
+			result := client.GetBatchNodes("")
+			log.Println("result:", result)
+			time.Sleep(time.Second * 3)
+		}
+	}
+	go sf()
 
 	wg.Add(1)
 	wg.Wait()

@@ -1,14 +1,15 @@
-package main
+package monitor
 
 import (
-	"github.com/andyzhou/tinycells/tc"
-	"github.com/andyzhou/monitor/service"
+	"fmt"
+	"github.com/andyzhou/monitor/define"
 	"github.com/andyzhou/monitor/face"
-	"runtime/debug"
-	"os/signal"
-	"sync"
+	"github.com/andyzhou/monitor/service"
 	"log"
 	"os"
+	"os/signal"
+	"runtime/debug"
+	"sync"
 )
 
 func init()  {
@@ -28,7 +29,7 @@ func main()  {
 	}()
 
 	//pre init log service
-	logService := tc.NewLogService(Options.logPath, Options.logPrefix)
+	//logService := tc.NewLogService(Options.logPath, Options.logPrefix)
 
 	//catch signal
 	c := make(chan os.Signal, 1)
@@ -36,17 +37,14 @@ func main()  {
 
 	//signal snatch
 	go func(wg *sync.WaitGroup) {
-		var needQuit bool
 		for {
-			if needQuit {
-				break
-			}
 			select {
 			case s := <- c:
-				log.Println("get signal of ", s.String())
-				wg.Done()
-				needQuit = true
-				break
+				{
+					log.Println("get signal of ", s.String())
+					wg.Done()
+					return
+				}
 			}
 		}
 	}(&wg)
@@ -57,13 +55,20 @@ func main()  {
 	//start wait group
 	wg.Add(1)
 
+	//set port
+	port := Options.port
+	if port <= 0 {
+		port = define.DefaultPort
+	}
+
 	//start rpc service
-	rpcService := service.NewRpcServer(Options.port)
+	fmt.Printf("start monitor on %v...\n", port)
+	rpcService := service.NewRpcServer(port)
 
 	wg.Wait()
 
 	//clean service and data
 	rpcService.Stop()
 	face.RunInterFace.Quit()
-	logService.Close()
+	//logService.Close()
 }

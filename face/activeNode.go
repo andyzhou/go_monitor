@@ -1,9 +1,10 @@
 package face
 
 import (
+	"github.com/andyzhou/monitor/define"
 	pb "github.com/andyzhou/monitor/pb"
-	"sync"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -12,11 +13,6 @@ import (
  * @author <AndyZhou>
  * @mail <diudiu8848@163.com>
  */
-
- //internal macro variables
- const (
- 	NodeChanSize = 64
- )
 
  //node status
  const (
@@ -36,20 +32,20 @@ import (
 
  //active node info
  type ActiveNode struct {
- 	nodeMap map[string]NodeInfo `running active client node map, remoteAddr:NodeInfo`
+ 	nodeMap map[string]*NodeInfo `running active client node map, remoteAddr:NodeInfo`
  	nodeChan chan NodeInfo `node receiver chan`
  	removeChan chan string `node remove chan`
  	closeChan chan bool
- 	sync.Mutex `internal data locker`
+ 	sync.RWMutex `internal data locker`
  }
 
  //construct
 func NewActiveNode() *ActiveNode {
 	//self init
 	this := &ActiveNode{
-		nodeMap:make(map[string]NodeInfo),
-		nodeChan:make(chan NodeInfo, NodeChanSize),
-		removeChan:make(chan string, NodeChanSize),
+		nodeMap:make(map[string]*NodeInfo),
+		nodeChan:make(chan NodeInfo, define.NodeChanSize),
+		removeChan:make(chan string, define.NodeChanSize),
 		closeChan:make(chan bool),
 	}
 	//run main process
@@ -77,8 +73,8 @@ func (a *ActiveNode) NodeIsExists(remoteAddr string) bool {
 }
 
 //get batch nodes by kind
-func (a *ActiveNode) GetNodes(kind string) map[string]NodeInfo{
-	result := make(map[string]NodeInfo)
+func (a *ActiveNode) GetNodes(kind string) map[string]*NodeInfo{
+	result := make(map[string]*NodeInfo)
 	for k, node := range a.nodeMap {
 		if kind != "" && kind != node.Kind {
 			continue
@@ -167,9 +163,8 @@ func (a *ActiveNode) clearNodes() bool {
 
 //notify other nodes
 //call this when node up/down
-func (a *ActiveNode) notifyOthers(node NodeInfo, status int32) {
+func (a *ActiveNode) notifyOthers(node *NodeInfo, status int32) {
 	var err error
-	//log.Println("notifyOthers, nodeMap:", len(a.nodeMap))
 	for k, v := range a.nodeMap {
 		if k == node.RemoteAddr {
 			continue
@@ -181,12 +176,7 @@ func (a *ActiveNode) notifyOthers(node NodeInfo, status int32) {
 			Port:node.Port,
 			Status:status,
 		})
-		if err != nil {
-			//send failed?
-			log.Println("notifyOthers ", k, " failed, error:", err.Error())
-		}else{
-			log.Println("notifyOthers ", k, " success")
-		}
+		log.Printf("noitify others %v, err:%v\n", k, err)
 	}
 }
 
@@ -195,20 +185,24 @@ func (a *ActiveNode) removeNode(address string) bool {
 	if address == "" {
 		return false
 	}
+	a.Lock()
+	defer a.Unlock()
 	if node, ok := a.nodeMap[address]; ok {
 		//remove node
-		a.Lock()
 		delete(a.nodeMap, address)
-		a.Unlock()
-
 		//notify
 		a.notifyOthers(node, NodeStatDown)
 	}
+	log.Printf("current nodes:%v\n", len(a.nodeMap))
 	return true
 }
 
 //sync node
-func (a *ActiveNode) syncNode(node NodeInfo) {
+func (a *ActiveNode) syncNode(node *NodeInfo) {
+	//check
+	if node == nil {
+		return
+	}
 	address := node.RemoteAddr
 
 	//notify
@@ -216,8 +210,9 @@ func (a *ActiveNode) syncNode(node NodeInfo) {
 
 	//sync node into running map
 	a.Lock()
+	defer a.Unlock()
 	a.nodeMap[address] = node
-	a.Unlock()
+	log.Printf("current nodes:%v\n", len(a.nodeMap))
 }
 
 //internal main process
@@ -225,34 +220,33 @@ func (a *ActiveNode) runMainProcess() {
 	var (
 		node NodeInfo
 		address string
-		needQuit, isOk bool
+		isOk bool
 	)
 
-	for {
-		if needQuit && len(a.nodeChan) <= 0 && len(a.removeChan) <= 0 {
-			break
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("ActiveNode:runMainProcess panic, err:%v\n", err)
 		}
+		//clean up
+		a.clearNodes()
+		close(a.nodeChan)
+		close(a.removeChan)
+	}()
+
+	//loop
+	for {
 		select {
 		case node, isOk = <- a.nodeChan://sync node
-			{
-				if isOk {
-					a.syncNode(node)
-				}
+			if isOk && &node != nil {
+				a.syncNode(&node)
 			}
 		case address, isOk = <- a.removeChan://remove node
-			{
-				if isOk {
-					a.removeNode(address)
-				}
+			if isOk && address != "" {
+				a.removeNode(address)
 			}
 		case <- a.closeChan:
-			needQuit = true
+			return
 		}
 	}
-
-	//clean up
-	a.clearNodes()
-	close(a.nodeChan)
-	close(a.removeChan)
 }
 

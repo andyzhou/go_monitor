@@ -1,11 +1,12 @@
 package service
 
 import (
-	"google.golang.org/grpc"
-	"github.com/andyzhou/monitor/pb"
 	"fmt"
-	"net"
+	"github.com/andyzhou/monitor/define"
+	"github.com/andyzhou/monitor/pb"
+	"google.golang.org/grpc"
 	"log"
+	"net"
 )
 
 /*
@@ -22,6 +23,9 @@ type RpcServer struct {
 
 //construct
 func NewRpcServer(port int) *RpcServer {
+	if port <= 0 {
+		port = define.DefaultPort
+	}
 	address := fmt.Sprintf(":%d", port)
 	this := &RpcServer{
 		address:address,

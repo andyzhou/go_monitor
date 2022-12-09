@@ -1,8 +1,12 @@
-# go_monitor
+# monitor
 
 Introduce
 ====
-This is monitor service, base on grpc, used for monitor assigned nodes.
+This is node monitor service, base on grpc, used for assigned nodes.
+
+Dependence
+====
+Need go 1.17.x
 
 Install proto buff for go
 ====
